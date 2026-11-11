@@ -44,7 +44,7 @@ pywal theme and ships as the default `Super+F` / `inode/directory` handler.
 - Instant filename filter (`Ctrl+F`) plus recursive name/content search
   (`Ctrl+Shift+F`, ripgrep for content when installed)
 - Command palette over every action (`Ctrl+K`), plus a settings dialog
-  (`Ctrl+,`) for every preference
+  (`Ctrl+,`) for every preference, including a right-click menu editor
 - Full keyboard operation; see the shortcut table below
 
 ## Requirements
