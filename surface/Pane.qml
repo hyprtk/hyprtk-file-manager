@@ -528,6 +528,8 @@ Item {
             { key: "addPlace", label: "Add to Places", group: "organize" },
             { key: "selectAll", label: "Select All", group: "organize" },
 
+            { key: "archive", label: "Open Archive…", group: "tools" },
+            { key: "compress", label: "Compress…", group: "tools" },
             { key: "terminal", label: "Open Terminal Here", group: "tools" },
             { key: "root", label: "Open as Root", group: "tools" },
             { key: "rootTerminal", label: "Open Terminal as Root", group: "tools" },
@@ -563,6 +565,11 @@ Item {
             undo: function () { root.undoLast(); },
             redo: function () { root.redoLast(); },
             properties: function () { root.showProperties(); },
+            archive: function () { Ui.askArchive(root.cursorPath()); },
+            compress: function () {
+                const paths = root.selectedPaths();
+                Ui.askCompress(paths.length > 0 ? paths : [root.cursorPath()]);
+            },
             terminal: function () { root.openTerminal(); },
             root: function () { root.openAsRoot(); },
             rootTerminal: function () { root.openTerminalRoot(); },
@@ -582,7 +589,9 @@ Item {
             emptyTrash: root.inTrash(),
             openTrash: !root.inTrash(),
             selectAll: listing.entries.length > 0,
-            properties: single
+            properties: single,
+            archive: single,
+            compress: has
         };
 
         const hidden = Config.hiddenMenuItems || [];

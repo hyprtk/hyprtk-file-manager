@@ -27,6 +27,8 @@ FloatingWindow {
     property int sessionId: -1
     property bool sessionLoaded: false
     property bool restoring: false
+    property var compressTargets: []
+    property string compressDir: ""
 
     function setActivePane(pane) {
         win.activePane = pane;
@@ -97,6 +99,11 @@ FloatingWindow {
             { label: "Delete Permanently…", action: function () { pane.deleteSelection(); } },
             { label: "Undo", action: function () { Jobs.undo(); } },
             { label: "Redo", action: function () { Jobs.redo(); } },
+            { label: "Open Archive…", action: function () { Ui.askArchive(pane.cursorPath()); } },
+            { label: "Compress…", action: function () {
+                const paths = pane.selectedPaths();
+                Ui.askCompress(paths.length > 0 ? paths : [pane.cursorPath()]);
+            } },
             { label: "Properties…", action: function () { Ui.askProperties(pane.cursorPath()); } },
             { label: "Open Terminal Here", action: function () { pane.openTerminal(); } },
             { label: "Open as Root", action: function () { pane.openAsRoot(); } },
@@ -254,6 +261,42 @@ FloatingWindow {
         onClosed: win.focusActivePane()
     }
 
+    ArchiveDialog {
+        id: archiveDialog
+        onClosed: win.focusActivePane()
+    }
+
+    PromptDialog {
+        id: compressDialog
+        title: "Compress"
+        label: "Archive name (.zip, .tar.gz or .tar.xz)"
+        onAccepted: (value) => {
+            if (win.compressTargets.length === 0)
+                return;
+            const name = value.trim();
+            if (name.length === 0)
+                return;
+            let format = "zip";
+            if (name.endsWith(".tar.gz") || name.endsWith(".tgz"))
+                format = "tar.gz";
+            else if (name.endsWith(".tar.xz") || name.endsWith(".txz"))
+                format = "tar.xz";
+            Backend.call("archive.create", {
+                paths: win.compressTargets,
+                destination: win.compressDir.replace(/\/$/, "") + "/" + name,
+                format: format,
+            });
+            win.compressTargets = [];
+            Ui.close();
+            win.focusActivePane();
+        }
+        onCancelled: {
+            win.compressTargets = [];
+            Ui.close();
+            win.focusActivePane();
+        }
+    }
+
     SettingsDialog {
         id: settingsDialog
         onClosed: win.focusActivePane()
@@ -378,6 +421,20 @@ FloatingWindow {
         }
         function onOpenWithRequested(path) {
             openWithDialog.open(path);
+        }
+        function onArchiveRequested(path) {
+            archiveDialog.open(path);
+        }
+        function onCompressRequested(paths) {
+            const list = Array.prototype.slice.call(paths || [], 0);
+            if (list.length === 0)
+                return;
+            win.compressTargets = list;
+            const dir = list[0].substring(0, list[0].lastIndexOf("/"));
+            win.compressDir = dir || "/";
+            const base = list[0].substring(list[0].lastIndexOf("/") + 1);
+            compressDialog.open("Compress", "Archive name (.zip, .tar.gz or .tar.xz)",
+                                (base.replace(/\.[^.]+$/, "") || "archive") + ".zip");
         }
         function onSettingsRequested() {
             settingsDialog.open();

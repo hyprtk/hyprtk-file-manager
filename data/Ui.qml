@@ -14,6 +14,8 @@ Singleton {
     signal batchRenameRequested(var paths)
     signal propertiesRequested(string path)
     signal openWithRequested(string path)
+    signal archiveRequested(string path)
+    signal compressRequested(var paths)
     signal settingsRequested()
     signal emptyTrashRequested()
     signal placesChanged()
@@ -44,6 +46,16 @@ Singleton {
     function askProperties(path) {
         root.modalOpen = true;
         root.propertiesRequested(path);
+    }
+
+    function askArchive(path) {
+        root.modalOpen = true;
+        root.archiveRequested(path);
+    }
+
+    function askCompress(paths) {
+        root.modalOpen = true;
+        root.compressRequested(paths);
     }
 
     function askOpenWith(path) {

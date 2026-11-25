@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **Archive browser** (`archive.py`, `ArchiveDialog.qml`): zip, tar (gz/xz/bz2)
+  and 7z archives are listed with nested directory walking; a member or the
+  whole archive is extracted into the same folder. Extraction refuses absolute
+  paths, `..` segments and link members before writing anything.
+- **Create archives**: “Compress…” writes `.zip`, `.tar.gz` or `.tar.xz` from
+  the selection (or the cursor) using the standard library.
+
 ## 1.8.12 — 2026-11-20
 
 ### Fixed

@@ -10,6 +10,7 @@ import threading
 from pathlib import Path
 
 from . import __version__
+from . import archive as archive_mod
 from . import clipboard as clipboard_mod
 from . import launch
 from . import meta
@@ -171,6 +172,11 @@ def handle(request: dict) -> dict:
             return {"id": rid, "result": MANAGER.dispatch("redo", params)}
         if method == "stat":
             return {"id": rid, "result": meta.file_info(str(params.get("path") or ""))}
+        if method == "archive.kind":
+            return {
+                "id": rid,
+                "result": {"kind": archive_mod.kind_of(str(params.get("path") or ""))},
+            }
         if method == "chmod":
             return {
                 "id": rid,
@@ -226,6 +232,21 @@ def _serve_async(request: dict) -> None:
                 no_ignore=bool(params.get("noIgnore", False)),
                 limit=int(params.get("limit", 500)),
             )
+        elif method == "archive.list":
+            result = archive_mod.list_archive(
+                str(params.get("path") or ""), str(params.get("inner") or ""))
+        elif method == "archive.extract":
+            result = archive_mod.extract(
+                str(params.get("path") or ""),
+                str(params.get("inner") or ""),
+                str(params.get("destination") or "") or None,
+            )
+        elif method == "archive.create":
+            result = archive_mod.create(
+                [str(item) for item in (params.get("paths") or [])],
+                str(params.get("destination") or ""),
+                str(params.get("format") or "zip"),
+            )
         elif method == "checksum":
             result = meta.checksum(
                 str(params.get("path") or ""),
@@ -261,6 +282,7 @@ def _serve_async(request: dict) -> None:
 
 ASYNC_METHODS = {
     "preview", "thumb", "search", "checksum", "devices.mount", "devices.eject",
+    "archive.list", "archive.extract", "archive.create",
     "network.scan", "network.mount", "network.shares", "open_with.apps",
     "clipboard.get",
 }
